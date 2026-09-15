@@ -1,9 +1,9 @@
 // context/auth_context.tsx
-import * as SecureStore from "expo-secure-store";
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { authService } from "../services/auth_service";
 import { ApiUser } from "@/services/api/apiTypes";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/services/api/config";
+import { getStoredToken, saveToken, clearTokens } from "../services/apiClient";
 
 interface AuthContextType {
   token: string | null;
@@ -26,15 +26,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadStoredToken = async () => {
       try {
-        const storedToken = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+        const storedToken = await getStoredToken();
         if (storedToken) {
           setToken(storedToken);
           const userData = await authService.getMe();
           setUser(userData);
         }
       } catch (error) {
-        await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-        await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+        await clearTokens();
       } finally {
         setIsLoading(false);
       }
@@ -46,8 +45,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: { email: string; password: string }) => {
     const data = await authService.login(credentials);
     setToken(data.access);
-    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, data.access);
-    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.refresh);
+    // Save to all token keys for cross-compatibility
+    await saveToken(data.access);
     const userData = await authService.getMe();
     setUser(userData);
   };
@@ -60,8 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     setToken(null);
     setUser(null);
-    await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    await clearTokens();
   };
 
   return (

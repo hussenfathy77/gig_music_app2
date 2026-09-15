@@ -7,10 +7,11 @@ import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/Typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import { getApiErrorMessage } from '../../services/apiClient';
 
 export default function SignupScreen() {
   const router = useRouter();
-  const { register, login } = useAuth();
+  const { register } = useAuth();
   
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -19,8 +20,19 @@ export default function SignupScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (!username || !email || !password) {
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanUsername || !cleanEmail || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    if (!/^[\w.@+-]+$/.test(cleanUsername)) {
+      Alert.alert('Error', 'Username can contain only letters, numbers, @, ., +, - and _.');
+      return;
+    }
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters.');
       return;
     }
     
@@ -31,11 +43,10 @@ export default function SignupScreen() {
     
     setIsLoading(true);
     try {
-      await register({ username, email, password });
-      await login({ email, password });
+      await register({ username: cleanUsername, email: cleanEmail, password });
       router.replace('/(drawer)/(tabs)');
-    } catch (error) {
-      Alert.alert('Signup Failed', 'Could not create account');
+    } catch (error: any) {
+      Alert.alert('Signup Failed', getApiErrorMessage(error, 'Could not create account.'));
     } finally {
       setIsLoading(false);
     }

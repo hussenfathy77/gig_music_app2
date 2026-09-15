@@ -4,10 +4,6 @@ import { MOCK_ARTISTS } from './mock/artists';
 import { MOCK_PLAYLISTS } from './mock/playlists';
 import { ApiConfig } from '@/constants/api';
 
-const delay = (min: number, max: number) => {
-  return new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1) + min)));
-};
-
 const checkSignal = (signal?: AbortSignal) => {
   if (signal?.aborted) {
     throw new Error('AbortError');
@@ -58,8 +54,6 @@ export async function searchByCategory(
     throw new Error('Production API not implemented');
   }
 
-  // Simulate network delay
-  await delay(200, 400);
   checkSignal(signal);
 
   const results: SearchResult[] = [];

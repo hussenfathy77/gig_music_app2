@@ -4,10 +4,10 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import { Typography } from '../constants/Typography';
 import { usePlayer } from '../context/PlayerContext';
-import { Play, Pause } from 'lucide-react-native';
+import { Play, Pause, X } from 'lucide-react-native';
 
 export const MiniPlayer = () => {
-  const { currentTrack, isPlaying, pauseTrack, resumeTrack } = usePlayer();
+  const { currentTrack, isPlaying, pauseTrack, resumeTrack, closeTrack } = usePlayer();
   const router = useRouter();
 
   if (!currentTrack) return null;
@@ -32,13 +32,26 @@ export const MiniPlayer = () => {
         </View>
         <TouchableOpacity 
           style={styles.playButton}
-          onPress={isPlaying ? pauseTrack : resumeTrack}
+          onPress={(event) => {
+            event.stopPropagation();
+            isPlaying ? pauseTrack() : resumeTrack();
+          }}
         >
           {isPlaying ? (
             <Pause color={Colors.white} size={24} fill={Colors.white} />
           ) : (
             <Play color={Colors.white} size={24} fill={Colors.white} />
           )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={(event) => {
+            event.stopPropagation();
+            closeTrack();
+          }}
+          accessibilityLabel="Close song"
+        >
+          <X color={Colors.textSecondary} size={20} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -95,6 +108,9 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   playButton: {
+    padding: 12,
+  },
+  closeButton: {
     padding: 12,
   },
 });

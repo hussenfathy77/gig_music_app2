@@ -1,46 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Menu, Search } from 'lucide-react-native';
-import { useRouter, useNavigation } from 'expo-router';
+import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/Typography';
 import { TrackItem } from '../../../components/TrackItem';
 import { AlbumCard } from '../../../components/AlbumCard';
 import { trackService } from '../../../services/trackService';
+import { playlistService } from '../../../services/playlistService';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const navigation = useNavigation();
+  const { user, isLoading: authLoading } = useAuth();
   const [tracks, setTracks] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (user) void loadData();
+    }, [user])
+  );
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // For Figma design, fetch recommended (tracks) and playlists
       const [tracksData, playlistsData] = await Promise.all([
         trackService.getTracks({ limit: 4 }),
-        fetch('https://musicapp-production-bcd8.up.railway.app/api/playlists/', {
-          headers: { Authorization: `Bearer ${await require('expo-secure-store').getItemAsync('access_token')}` }
-        }).then(res => res.json()).catch(() => ({ results: [] }))
+        playlistService.getPlaylists(),
       ]);
       
       setTracks(tracksData.results || tracksData); 
       setPlaylists(playlistsData.results || playlistsData);
-    } catch (error) {
-      console.warn('Failed to load home data', error);
+    } catch (error: any) {
+      // 401 is handled by the API client; do not show a noisy console warning.
+      if (error?.response?.status !== 401) console.warn('Failed to load home data', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoading) {
+  if (authLoading || !user || isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -76,7 +79,7 @@ export default function HomeScreen() {
           <View style={styles.gridContainer}>
             {playlists.map((playlist: any) => (
               <View key={playlist.id} style={styles.gridItem}>
-                <AlbumCard item={playlist} />
+                <AlbumCard item={playlist} onPress={() => router.push({ pathname: '/playlist/[id]', params: { id: playlist.id } })} />
               </View>
             ))}
           </View>
