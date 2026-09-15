@@ -6,6 +6,7 @@ import { usePlayer } from '../context/PlayerContext';
 import { Heart, MoreVertical } from 'lucide-react-native';
 import { trackService } from '../services/trackService';
 import { PlaylistSelectionModal } from './PlaylistSelectionModal';
+import { useRouter } from 'expo-router';
 
 interface AlbumCardProps {
   item: any; // could be track, playlist, or album
@@ -17,6 +18,7 @@ const cardWidth = width * 0.4;
 
 export const AlbumCard = ({ item, onPress }: AlbumCardProps) => {
   const { playTrack } = usePlayer();
+  const router = useRouter();
   const [isLiked, setIsLiked] = React.useState(false);
   const [isModalVisible, setIsModalVisible] = React.useState(false);
 
@@ -24,7 +26,8 @@ export const AlbumCard = ({ item, onPress }: AlbumCardProps) => {
     if (onPress) {
       onPress();
     } else {
-      playTrack(item);
+      void playTrack(item);
+      router.push('/player');
     }
   };
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { AuthButton } from "../../components/auth/auth_button";
 import { AuthInput } from "../../components/auth/auth_input";
-import { useAuth } from "../../hooks/use_auth";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SignInScreen() {
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ export default function SignInScreen() {
     try {
       setLoading(true);
       await login({ email, password });
-      router.replace("/(tabs)/home");
+      router.replace('/(drawer)/(tabs)');
     } catch (error: any) {
       Alert.alert("Login Failed", error.message || "Invalid credentials");
     } finally {

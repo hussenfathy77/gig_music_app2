@@ -4,18 +4,23 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import { Typography } from '../constants/Typography';
 import { usePlayer } from '../context/PlayerContext';
-import { Play, Pause, SkipBack, SkipForward, ChevronDown, Heart, Shuffle, Repeat } from 'lucide-react-native';
+import { Play, Pause, SkipBack, SkipForward, ChevronDown, Heart, Shuffle, Repeat, MoreVertical, X } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { formatTime } from '../utils/format_time';
 
 export default function PlayerScreen() {
   const router = useRouter();
-  const { currentTrack, isPlaying, pauseTrack, resumeTrack } = usePlayer();
+  const { currentTrack, isPlaying, isLoading, error, position, duration, isLooping, pauseTrack, resumeTrack, seekBy, toggleLoop, closeTrack } = usePlayer();
+  const closePlayer = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(drawer)/(tabs)');
+  };
 
   if (!currentTrack) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={closePlayer}>
             <ChevronDown color={Colors.text} size={32} />
           </TouchableOpacity>
         </View>
@@ -29,12 +34,12 @@ export default function PlayerScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+          <TouchableOpacity onPress={closePlayer} style={styles.iconButton}>
           <ChevronDown color={Colors.text} size={32} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Now Playing</Text>
-        <TouchableOpacity style={styles.iconButton}>
-          <MoreVertical color={Colors.text} size={24} />
+        <TouchableOpacity style={styles.iconButton} onPress={() => { closeTrack(); closePlayer(); }} accessibilityLabel="Close song">
+          <X color={Colors.text} size={26} />
         </TouchableOpacity>
       </View>
 
@@ -56,22 +61,25 @@ export default function PlayerScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* Progress Bar Placeholder */}
         <View style={styles.progressContainer}>
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: '30%' }]} />
+            <View style={[styles.progressBarFill, { width: `${duration > 0 ? Math.min(100, (position / duration) * 100) : 0}%` }]} />
           </View>
           <View style={styles.timeRow}>
-            <Text style={styles.timeText}>1:24</Text>
-            <Text style={styles.timeText}>3:45</Text>
+            <Text style={styles.timeText}>{formatTime(position)}</Text>
+            <Text style={styles.timeText}>{formatTime(duration)}</Text>
           </View>
         </View>
 
+        {(isLoading || error) && (
+          <Text style={styles.playerMessage}>{isLoading ? 'Loading audio…' : error}</Text>
+        )}
+
         <View style={styles.controlsContainer}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => {}} accessibilityLabel="Shuffle">
             <Shuffle color={Colors.textSecondary} size={24} />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => void seekBy(-10)}>
             <SkipBack color={Colors.text} size={36} fill={Colors.text} />
           </TouchableOpacity>
           
@@ -86,20 +94,17 @@ export default function PlayerScreen() {
             )}
           </TouchableOpacity>
           
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => void seekBy(10)}>
             <SkipForward color={Colors.text} size={36} fill={Colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Repeat color={Colors.textSecondary} size={24} />
+          <TouchableOpacity onPress={toggleLoop}>
+            <Repeat color={isLooping ? Colors.primary : Colors.textSecondary} size={24} />
           </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
   );
 }
-
-// Need to import MoreVertical for the header
-import { MoreVertical } from 'lucide-react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -181,6 +186,12 @@ const styles = StyleSheet.create({
   timeText: {
     ...Typography.small,
     color: Colors.textSecondary,
+  },
+  playerMessage: {
+    ...Typography.small,
+    color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: 12,
   },
   controlsContainer: {
     flexDirection: 'row',

@@ -26,20 +26,25 @@ const request = async <T>(path: string, options: ApiOptions = {}, retried = fals
 
   if (response.status === 401 && !skipAuth && !retried) {
     const refresh = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-    if (refresh) {
+    const legacyRefresh = await SecureStore.getItemAsync('music_app_refresh_token');
+    const refreshToken = refresh || legacyRefresh;
+    if (refreshToken) {
       const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
+        body: JSON.stringify({ refresh: refreshToken }),
       });
       if (refreshResponse.ok) {
         const tokens = (await refreshResponse.json()) as { access: string };
+        // Save to both keys for cross-compatibility
         await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, tokens.access);
+        await SecureStore.setItemAsync('access_token', tokens.access);
         return request<T>(path, options, true);
       }
     }
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    await SecureStore.deleteItemAsync('access_token');
   }
 
   if (!response.ok) throw new Error(await readError(response));

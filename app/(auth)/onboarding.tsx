@@ -5,28 +5,33 @@ import { CustomButton } from '../../components/CustomButton';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/Typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowRight } from 'lucide-react-native';
+import { ArrowRight, Music2 } from 'lucide-react-native';
 
 export default function OnboardingScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Small top text like "let's start" in figma */}
+      {/* Small top text */}
       <View style={styles.topBar}>
         <Text style={styles.topBarText}>let's start</Text>
       </View>
 
       <View style={styles.content}>
-        <Image 
-          source={require('../../assets/images/spongebob_music.jpg')} 
-          style={styles.image}
-          resizeMode="contain"
-        />
+        {/* Image container with dark overlay effect */}
+        <View style={styles.imageWrapper}>
+          <Image 
+            source={require('../../assets/images/spongebob_music.jpg')} 
+            style={styles.image}
+            resizeMode="cover"
+          />
+          {/* Gradient fade at bottom to blend with background */}
+          <View style={styles.imageBottomFade} />
+        </View>
         
-        <Text style={styles.title}>Music Player App</Text>
+        <Text style={styles.title}>GIG Music</Text>
         <Text style={styles.subtitle}>
-          "A sleek, modern music app that brings your favorite songs, artists, and playlists together"
+          A sleek, modern music app that brings your favorite songs, artists, and playlists together
         </Text>
       </View>
 
@@ -46,14 +51,14 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA', // Light soft background
+    backgroundColor: '#1E222A',
   },
   topBar: {
     paddingHorizontal: 24,
     paddingTop: 16,
   },
   topBarText: {
-    color: '#D1D1D1',
+    color: '#A0AAB8',
     fontSize: 16,
     fontWeight: '500',
   },
@@ -63,25 +68,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 32,
   },
-  image: {
-    width: 250,
-    height: 250,
+  imageWrapper: {
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    overflow: 'hidden',
     marginBottom: 40,
+    position: 'relative',
+    borderWidth: 3,
+    borderColor: '#C84B31',
+    shadowColor: '#C84B31',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 120,
+  },
+  imageBottomFade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    backgroundColor: 'rgba(30, 34, 42, 0.5)',
   },
   title: {
     ...Typography.header,
-    color: '#1A1A1A',
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 16,
+    color: '#F5F7FA',
+    fontSize: 32,
+    fontWeight: '800',
+    marginBottom: 12,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   subtitle: {
     ...Typography.body,
-    color: '#666666',
+    color: '#A0AAB8',
     textAlign: 'center',
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
     paddingHorizontal: 16,
   },
   footer: {
@@ -89,8 +118,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   startButton: {
-    backgroundColor: '#D94C2B', // The orange color from the design
-    borderRadius: 12,
+    backgroundColor: '#C84B31',
+    borderRadius: 14,
     paddingVertical: 16,
+    flexDirection: 'row',
+    gap: 10,
   }
 });

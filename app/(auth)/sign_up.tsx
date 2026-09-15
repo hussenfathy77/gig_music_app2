@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { AuthButton } from "../../components/auth/auth_button";
 import { AuthInput } from "../../components/auth/auth_input";
-import { useAuth } from "../../hooks/use_auth";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SignUpScreen() {
   const [username, setUsername] = useState("");
@@ -29,7 +29,7 @@ export default function SignUpScreen() {
     try {
       setLoading(true);
       await register({ username, email, password });
-      router.replace("/(tabs)/home");
+      router.replace('/(drawer)/(tabs)');
     } catch (error: any) {
       Alert.alert(
         "Sign Up Failed",

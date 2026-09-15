@@ -10,6 +10,8 @@ interface CustomButtonProps {
   isLoading?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  rightIcon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
 }
 
 export const CustomButton = ({ 
@@ -18,7 +20,9 @@ export const CustomButton = ({
   variant = 'primary', 
   isLoading = false,
   style,
-  textStyle
+  textStyle,
+  rightIcon,
+  leftIcon,
 }: CustomButtonProps) => {
   const getBackgroundStyle = () => {
     switch (variant) {
@@ -48,7 +52,11 @@ export const CustomButton = ({
       {isLoading ? (
         <ActivityIndicator color={variant === 'outline' ? Colors.primary : Colors.white} />
       ) : (
-        <Text style={[styles.text, getTextStyle(), textStyle]}>{title}</Text>
+        <>
+          {leftIcon && <>{leftIcon}</>}
+          <Text style={[styles.text, getTextStyle(), textStyle]}>{title}</Text>
+          {rightIcon && <>{rightIcon}</>}
+        </>
       )}
     </TouchableOpacity>
   );

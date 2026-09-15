@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Menu } from 'lucide-react-native';
@@ -7,17 +7,23 @@ import { Typography } from '../../../constants/Typography';
 import { playlistService } from '../../../services/playlistService';
 import { AlbumCard } from '../../../components/AlbumCard';
 import { CreatePlaylistModal } from '../../../components/CreatePlaylistModal';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter, useFocusEffect } from 'expo-router';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function PlaylistsScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const [playlists, setPlaylists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (user) void loadData();
+      else setPlaylists([]);
+    }, [user?.id])
+  );
 
   const loadData = async () => {
     setIsLoading(true);
@@ -25,6 +31,7 @@ export default function PlaylistsScreen() {
       const data = await playlistService.getPlaylists();
       setPlaylists(data.results || data); 
     } catch (error) {
+      setPlaylists([]);
       console.error('Failed to load playlists', error);
     } finally {
       setIsLoading(false);
@@ -61,7 +68,7 @@ export default function PlaylistsScreen() {
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
-               <AlbumCard item={item} />
+             <AlbumCard item={item} onPress={() => router.push({ pathname: '/playlist/[id]', params: { id: item.id } })} />
             </View>
           )}
           showsVerticalScrollIndicator={false}

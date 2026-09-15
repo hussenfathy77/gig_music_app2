@@ -6,6 +6,7 @@ import { Typography } from '../constants/Typography';
 import { usePlayer } from '../context/PlayerContext';
 import { trackService } from '../services/trackService';
 import { PlaylistSelectionModal } from './PlaylistSelectionModal';
+import { useRouter } from 'expo-router';
 
 interface TrackItemProps {
   track: any;
@@ -16,6 +17,7 @@ interface TrackItemProps {
 
 export const TrackItem = ({ track, isLiked: initialIsLiked, onPress, onLikeToggle }: TrackItemProps) => {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
+  const router = useRouter();
   const [localIsLiked, setLocalIsLiked] = React.useState(initialIsLiked || false);
   const [isModalVisible, setIsModalVisible] = React.useState(false);
 
@@ -23,7 +25,8 @@ export const TrackItem = ({ track, isLiked: initialIsLiked, onPress, onLikeToggl
     if (onPress) {
       onPress();
     } else {
-      playTrack(track);
+      void playTrack(track);
+      router.push('/player');
     }
   };
 

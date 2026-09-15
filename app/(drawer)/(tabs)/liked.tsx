@@ -6,15 +6,18 @@ import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/Typography';
 import { TrackItem } from '../../../components/TrackItem';
 import { trackService } from '../../../services/trackService';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function LikedScreen() {
   const [tracks, setTracks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [])
+      if (user) void loadData();
+      else setTracks([]);
+    }, [user?.id])
   );
 
   const loadData = async () => {
@@ -23,6 +26,7 @@ export default function LikedScreen() {
       const likedData = await trackService.getLikedTracks();
       setTracks(likedData.results || likedData); 
     } catch (error) {
+      setTracks([]);
       console.error('Failed to load liked tracks', error);
     } finally {
       setIsLoading(false);

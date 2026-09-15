@@ -10,7 +10,7 @@ export const trackService = {
     return response.data;
   },
   searchTracks: async (query: string) => {
-    const response = await apiClient.get(`/tracks/`, { params: { search: query } });
+    const response = await apiClient.get(`/tracks/search/`, { params: { q: query.trim() } });
     return response.data;
   },
   playTrack: async (id: string) => {
